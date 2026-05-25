@@ -5,6 +5,7 @@ from pathlib import Path
 
 from app.llm.client import LLMClient
 from app.models.schemas import (
+    ChatMessage,
     Chunk,
     ExtractionMethod,
     IngestResponse,
@@ -21,6 +22,9 @@ from app.rag.store import VectorStore
 logger = logging.getLogger(__name__)
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp", ".webp"}
+
+HISTORY_WINDOW = 6
+SUMMARY_THRESHOLD = 10
 
 
 class Pipeline:
@@ -93,9 +97,21 @@ class Pipeline:
         collection_name: str = "default",
         n_results: int = 5,
         min_score: float = 0.3,
+        conversation_history: list[ChatMessage] | None = None,
     ) -> QueryResponse:
+        history = conversation_history or []
+        summary: str | None = None
+        recent = history[-HISTORY_WINDOW:] if history else []
+
+        if len(history) > SUMMARY_THRESHOLD:
+            older = history[:-HISTORY_WINDOW]
+            summary = await self.llm_client.summarize(older)
+            logger.info(
+                "Summarized %d older messages (total %d)", len(older), len(history),
+            )
+
         if not self.store.has_documents(collection_name):
-            answer = await self.llm_client.chat(query)
+            answer = await self.llm_client.chat(query, recent, summary)
             return QueryResponse(query=query, answer=answer, sources=[])
 
         query_embedding = self.embedder.embed_query(query)
@@ -103,11 +119,13 @@ class Pipeline:
         search_results = [r for r in search_results if r.score >= min_score]
 
         if not search_results:
-            answer = await self.llm_client.chat(query)
+            answer = await self.llm_client.chat(query, recent, summary)
             return QueryResponse(query=query, answer=answer, sources=[])
 
         retrieved_texts = [r.text for r in search_results]
-        answer = await self.llm_client.answer_with_context(query, retrieved_texts)
+        answer = await self.llm_client.answer_with_context(
+            query, retrieved_texts, recent, summary,
+        )
 
         sources = [
             SourceReference(

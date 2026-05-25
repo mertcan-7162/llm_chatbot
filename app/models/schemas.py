@@ -48,11 +48,17 @@ class IngestResponse(BaseModel):
     methods_used: list[ExtractionMethod]
 
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
 class QueryRequest(BaseModel):
     query: str
     collection_name: str = "default"
     n_results: int = Field(default=5, ge=1, le=20)
     min_score: float = Field(default=0.3, ge=0.0, le=1.0)
+    conversation_history: list[ChatMessage] = Field(default_factory=list)
 
 
 class QueryResponse(BaseModel):

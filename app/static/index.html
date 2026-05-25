@@ -216,6 +216,7 @@
       collection: 'default',
       topK: 5,
       minScore: 0.3,
+      conversationHistory: [],
     };
 
     const $ = (sel) => document.querySelector(sel);
@@ -269,6 +270,7 @@
 
     async function resetChat() {
       await clearCollection();
+      state.conversationHistory = [];
       messagesEl.innerHTML = `
         <div class="max-w-2xl mx-auto text-center mt-20">
           <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-600/20 flex items-center justify-center">
@@ -408,6 +410,7 @@
             collection_name: state.collection,
             n_results: state.topK,
             min_score: state.minScore,
+            conversation_history: state.conversationHistory,
           }),
         });
         if (!res.ok) {
@@ -416,6 +419,8 @@
         }
         const data = await res.json();
         fillAssistantMessage(placeholder, data.answer, data.sources);
+        state.conversationHistory.push({ role: 'user', content: text });
+        state.conversationHistory.push({ role: 'assistant', content: data.answer });
       } catch (err) {
         fillAssistantError(placeholder, `Error: ${err.message}`);
       } finally {

@@ -110,6 +110,7 @@ async def query_documents(request: QueryRequest):
             collection_name=request.collection_name,
             n_results=request.n_results,
             min_score=request.min_score,
+            conversation_history=request.conversation_history,
         )
         return result
     except Exception as e:
