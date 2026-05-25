@@ -89,13 +89,6 @@ Bir uyumsuzluk notu: Kodda `"passage: "` / `"query: "` prefix'leri kullanılıyo
 
 Cevap üretme katmanında OpenAI GPT-4o tercih edildi. Ana sebep **implementasyon kolaylığı**: OpenAI'ın Python SDK'sı (`openai` paketi) olgun, iyi dokümante edilmiş ve async desteği hazır. `AsyncOpenAI` client'ı ile FastAPI'nin async yapısına doğrudan uyum sağlıyor. Chat Completions API'si basit bir `messages` array'i ile çalışıyor; system prompt + user prompt göndermek birkaç satır kod. Ayrıca GPT-4o'nun çok dilli reasoning kalitesi yüksek; Türkçe, İngilizce, Almanca belgelerdeki bağlamdan doğru çıkarım yapabiliyor.
 
-Alternatif olarak local LLM (Ollama, llama.cpp) değerlendirildi ancak:
-- Reasoning kalitesi özellikle belge tabanlı soru-cevap senaryolarında GPT-4o'nun gerisinde kalıyor.
-- CPU'da inference süresi çok uzun, GPU gereksinimi ekliyor.
-- Proje zaten embedding için local model kullanıyor; LLM için de local model eklemek kaynak tüketimini ikiye katlardı.
-
-Bu nedenle OCR ve embedding local'de, LLM reasoning API üzerinden çalışıyor. Bu hibrit yaklaşım, maliyeti sadece soru-cevap aşamasıyla sınırlı tutuyor.
-
 ### 2.6 PDF ve Image İçin Ayrı Yollar
 
 Metin çıkarma katmanında PDF ve image dosyaları farklı pipeline'lardan geçiyor:

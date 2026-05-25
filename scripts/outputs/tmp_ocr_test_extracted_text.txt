@@ -1,5 +1,0 @@
-# Extracted text: tmp_ocr_test.png
-
---- Page 1 (ocr) ---
-
-Hello OCR 123

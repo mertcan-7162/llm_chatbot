@@ -1,141 +1,237 @@
 # TESTING — Test ve Doğrulama
 
-## 1. Test Stratejisi
+## 1. Test Yaklaşımı
 
-Sistem manuel olarak farklı belge tipleri, diller ve senaryo kombinasyonlarıyla test edildi. Testler hem CLI aracı (`scripts/extract_text.py`) hem de web UI üzerinden yapıldı. Amaç: metin çıkarma doğruluğu, RAG retrieval kalitesi ve LLM cevap tutarlılığını ölçmek.
+Bu projede test süreci iki ana aşamada yürütüldü:
 
----
+1. **Metin çıkarma doğrulaması:** Yüklenen PDF veya görsel dosyadan metnin gerçekten doğru çıkarılıp çıkarılmadığını anlamak için `scripts/extract_text.py` aracı yazıldı.
+2. **Uçtan uca chatbot testi:** OCR, chunking, embedding, ChromaDB retrieval ve LLM cevap üretimi birlikte test edildi.
 
-## 2. Test Edilen Belge Tipleri
-
-### 2.1 Türkçe Görsel — `2.mehmet.png`
-
-**İçerik:** Fatih Sultan Mehmed Vikipedi makalesi ekran görüntüsü.
-
-**OCR sonucu:** PaddleOCR metni büyük ölçüde doğru çıkardı. Türkçe karakterler (ş, ç, ö, ü, ğ, ı) çoğunlukla doğru okundu ancak bazı eksiklikler var:
-
-- "padişahıdır" → "padiahidir" (ş ve dotted-ı kayıpları)
-- "şehzade" → "ehzade"
-- "yaklaşık" → "yaklaik"
-- "başladı" → "balad"
-
-**Değerlendirme:** OCR, ana içeriği koruyarak okunabilir bir metin üretiyor. Türkçe özel karakterlerde kısmi kayıplar var ama cümle anlamı büyük ölçüde korunuyor. RAG pipeline'ında bu metin üzerinden sorulan sorulara doğru cevaplar üretildi.
-
-**Örnek sorular ve cevaplar:**
-
-| Soru | Beklenen | Sonuç |
-|------|----------|-------|
-| "İstanbul ne zaman fethedildi?" | 29 Mayıs 1453 | Doğru cevaplandı |
-| "Fatih kaç yaşında öldü?" | 49 | Doğru cevaplandı |
-| "Annesi kimdir?" | Hüma Hatun | Doğru cevaplandı |
-
-### 2.2 Almanca Görsel — `Text_entropy.png`
-
-**İçerik:** Rudolf Clausius'un entropi tanımını yaptığı orijinal Almanca metin.
-
-**OCR sonucu:** Almanca metin yüksek doğrulukla çıkarıldı. Umlauts (ä, ö, ü) ve ß karakterleri doğru okundu. Eski Almanca tipografi ve ligatures sorunsuz işlendi.
-
-**Çıkarılan metin (kısaltılmış):**
-> "Sucht man für S einen bezeichnenden Namen, so könnte man, ähnlich wie von der Grösse U gesagt ist..."
-
-**Değerlendirme:** Çok iyi. Tarihî bir matbu belge olmasına rağmen OCR doğruluğu yüksek.
-
-### 2.3 PDF — `mert_cv.pdf`
-
-**İçerik:** Dijital olarak oluşturulmuş CV belgesi.
-
-**Extraction yöntemi:** Native text extraction (PyMuPDF). OCR'a gerek kalmadı çünkü PDF dijital metin katmanı içeriyor.
-
-**Sonuç:** Metin eksiksiz ve doğru çıkarıldı. Sayfa yapısı korundu.
-
-### 2.4 PDF — `lect_03.pdf`
-
-**İçerik:** Ders notu PDF'i.
-
-**Extraction yöntemi:** Hibrit. Bazı sayfalar native text, bazıları (taranmış sayfalar varsa) OCR ile işlendi.
-
-**Sonuç:** Dijital sayfalar mükemmel çıkarıldı. Taranmış sayfalar OCR ile işlendi.
-
-### 2.5 İngilizce Görsel — `tmp_ocr_test.png`
-
-**İçerik:** Test amaçlı İngilizce metin görseli.
-
-**OCR sonucu:** İngilizce metin yüksek doğrulukla çıkarıldı.
+İlk aşamada amaç, chatbot cevaplarına geçmeden önce sistemin en temel girdisi olan çıkarılmış metnin kalitesini gözlemlemekti. OCR çıktısı hatalıysa RAG pipeline'ının doğru cevap üretmesi de zorlaşır.
 
 ---
 
-## 3. Sistem Davranış Testleri
+## 2. Metin Çıkarma Test Aracı
 
-### 3.1 Belgede Olmayan Bilgi Sorulduğunda
+Metin çıkarma kalitesini bağımsız olarak test edebilmek için `scripts/extract_text.py` dosyası yazıldı.
 
-**Senaryo:** Bir belge yüklendikten sonra belgede olmayan bir soru soruldu.
+Bu script:
 
-**Davranış:** İki durum var:
+- PDF ve görsel dosyaları destekler.
+- Görsellerde PaddleOCR kullanır.
+- PDF dosyalarında önce native text extraction dener, gerekirse OCR fallback kullanır.
+- Çıktıyı `.txt` veya `.json` formatında kaydedebilir.
+- Test konfigürasyonunu `scripts/extract_text.yaml` dosyasından okur.
 
-1. **Chroma'dan sonuç döner ama alakasız:** Relevance threshold (`min_score`) devreye girer. Skor eşiğin altındaysa tüm sonuçlar filtrelenir ve sistem serbest sohbet moduna düşer. LLM, RAG context'i olmadan genel bilgisiyle cevap verir.
+Örnek kullanım:
 
-2. **Chroma'dan sonuç döner ve eşiğin üstünde:** RAG prompt'undaki kural devreye girer: *"If the context does not contain enough information, say so clearly."* LLM bağlamda yeterli bilgi olmadığını belirtir.
+```bash
+python scripts/extract_text.py
+```
 
-### 3.2 Hiç Belge Yüklenmeden Sohbet
-
-**Senaryo:** Kullanıcı dosya yüklemeden soru soruyor.
-
-**Davranış:** Collection boş olduğu için (`has_documents()` → False) sistem doğrudan `LLMClient.chat()` kullanıyor. Normal bir chatbot gibi davranıyor, kaynak göstermiyor.
-
-### 3.3 Aynı Dosyanın Tekrar Yüklenmesi
-
-**Senaryo:** Aynı dosya iki kez yükleniyor.
-
-**Davranış:** Chunk ID'leri UUID olduğu için aynı dosyanın chunk'ları yeni ID'lerle ekleniyor. Bu, duplicate chunk'lara yol açabilir. Bilinen bir sınırlama; deterministik ID ile çözülebilir.
-
-### 3.4 Dosya Silme
-
-**Senaryo:** Yüklenen bir dosya UI'dan siliniyor.
-
-**Davranış:** `DELETE /api/v1/documents/{source}` endpoint'i, Chroma'dan `source` metadata'sına göre ilgili tüm chunk'ları siler. Diğer dosyaların chunk'ları etkilenmez.
-
-### 3.5 Yeni Sohbet (New Chat)
-
-**Senaryo:** Kullanıcı "New Chat" butonuna basıyor.
-
-**Davranış:** Aktif collection tamamen silinir (tüm chunk'lar). UI sıfırlanır. Temiz bir başlangıç sağlanır.
+Test edilen örnek dosyalar `example_input_files/` altında bulunur. Script çıktıları ise `scripts/outputs/` klasöründe tutulur.
 
 ---
 
-## 4. Performans Gözlemleri
+## 3. OCR ve Text Extraction Testleri
 
-| İşlem | Yaklaşık Süre | Ortam |
-|-------|--------------|-------|
-| PaddleOCR ilk yükleme | ~5-10 saniye | CPU |
-| Embedding model ilk yükleme | ~2-3 saniye | CPU |
-| Tek sayfa görsel OCR | ~1-3 saniye | CPU |
-| PDF native extraction (sayfa başı) | < 0.1 saniye | CPU |
-| Embedding üretme (5 chunk) | < 0.5 saniye | CPU |
-| Chroma sorgu | < 0.1 saniye | CPU |
-| LLM cevap (GPT-4o) | ~1-3 saniye | API |
+### 3.1 Türkçe Vikipedi Görselleri
+
+Türkçe OCR performansını ölçmek için Vikipedi sayfalarından alınan ekran görüntüleri kullanıldı:
+
+- `example_input_files/ataturk.png`
+- `example_input_files/fatih_sultan_mehmed.png`
+
+Bu dosyalar `scripts/extract_text.py` ile işlendi ve sonuçlar şu dosyalara yazıldı:
+
+- `scripts/outputs/ataturk_extracted_text.txt`
+- `scripts/outputs/fatih_sultan_mehmed_extracted_text.txt`
+
+Gözlem:
+
+- Metinlerin büyük bölümü doğru çıkarıldı.
+- Türkçe karakterler genel olarak korunabildi.
+- Fatih Sultan Mehmed örneğinde tarih, kişi adı, yer adı ve olay bilgileri başarılı şekilde çıkarıldı.
+- Atatürk örneğinde metin yoğun ve ekran görüntüsü daha karmaşık olmasına rağmen içerik büyük oranda okunabilir şekilde elde edildi.
+- Küçük OCR hataları oluşsa da metnin genel anlamı bozulmadı.
+
+Sonuç olarak Türkçe Vikipedi ekran görüntülerinde OCR başarımı yüksek gözlemlendi.
+
+### 3.2 İngilizce Vikipedi Görseli
+
+İngilizce OCR performansını test etmek için Donald Trump Vikipedi sayfasından alınan ekran görüntüsü kullanıldı:
+
+- `example_input_files/Trump.png`
+
+Çıktı:
+
+- `scripts/outputs/Trump_extracted_text.txt`
+
+Gözlem:
+
+- İngilizce metin neredeyse tamamen doğru çıkarıldı.
+- Cümle yapısı ve özel isimler büyük ölçüde korundu.
+- OCR çıktısı RAG pipeline'ında kullanılabilecek kadar temizdi.
+
+Bu test, sistemin yalnızca Türkçe değil İngilizce belgelerde de başarılı metin çıkarabildiğini gösterdi.
+
+### 3.3 El Yazısı Testi
+
+Daha zor bir OCR senaryosu olarak el yazısı içeren görsel test edildi:
+
+- `example_input_files/el_yazisi.png`
+
+Çıktı:
+
+- `scripts/outputs/el_yazisi_extracted_text.txt`
+
+Gözlem:
+
+- Sistem el yazısını kısmen okuyabildi.
+- Genel anlam bazı yerlerde korunmasına rağmen karakter hataları arttı.
+- Basılı metinlere göre başarımın belirgin şekilde düştüğü görüldü.
+
+Bu test, sistemin zorlu ve doğal olmayan inputlarda sınırlarını görmek için yapıldı. Sonuç olarak PaddleOCR'ın basılı/dijital metinlerde oldukça başarılı, el yazısında ise daha sınırlı olduğu gözlemlendi.
+
+### 3.4 PDF Extraction Testi
+
+PDF desteğini doğrulamak için örnek PDF dosyası test edildi:
+
+- `example_input_files/mert_cv.pdf`
+
+Çıktı:
+
+- `scripts/outputs/mert_cv_extracted_text.txt`
+
+Gözlem:
+
+- PDF dijital metin katmanı içerdiği için native extraction kullanıldı.
+- OCR'a gerek kalmadan metin hızlı ve başarılı şekilde çıkarıldı.
+- Başlıklar, deneyim bilgileri ve eğitim bilgileri okunabilir şekilde elde edildi.
+
+Bu test, sistemin PDF dosyalarında yalnızca OCR'a bağlı kalmadığını, mümkün olduğunda daha güvenilir olan native text extraction yolunu kullandığını doğruladı.
 
 ---
 
-## 5. Bilinen Sınırlamalar
+## 4. Uçtan Uca Chatbot Pipeline Testleri
 
-1. **Türkçe karakter kayıpları:** PaddleOCR bazı Türkçe özel karakterleri (ş, ğ, ı) yanlış okuyabiliyor. `ocr_lang` ayarı `tr` olarak ayarlı; bu, `latin_PP-OCRv5_mobile_rec` modelini yüklüyor ve tüm Latin alfabeli dilleri (Türkçe, İngilizce, Almanca vb.) destekliyor.
+Metin çıkarma testlerinden sonra sistem web arayüzü üzerinden uçtan uca test edildi.
 
-2. **Tablo ve yapısal veri:** Tablolu belgeler düz metin olarak çıkarılıyor. Tablo yapısı korunmuyor. Satır/sütun ilişkileri kayboluyor.
+Test edilen akış:
 
-3. **Multi-page TIFF:** Çok sayfalı TIFF dosyaları tek sayfa olarak işleniyor. Yalnızca ilk frame okunuyor.
+1. Dosya yükleme
+2. OCR veya PDF extraction
+3. Chunk oluşturma
+4. Embedding üretme
+5. ChromaDB'ye kayıt
+6. Kullanıcı sorusuna göre relevant chunk retrieval
+7. GPT-4o ile cevap üretimi
+8. Kaynakların frontend'de gösterilmesi
 
-4. **Conversation history yok:** Her sorgu bağımsız işleniyor. "Bunu biraz daha açıklar mısın?" gibi takip soruları çalışmıyor.
-
-5. **Duplicate chunk'lar:** Aynı dosya tekrar yüklendiğinde yeni UUID ile chunk'lar oluşuyor.
-
-6. **ImagePreprocessor kullanılmıyor:** Düşük kaliteli görseller için yazılan preprocessor (kontrast artırma, sharpening) pipeline'a entegre edilmemiş durumda.
-
-7. **Büyük dosya timeout:** Çok sayfalı büyük PDF'lerde OCR uzun sürebilir ve HTTP request timeout'a düşebilir.
+Bu testlerde LLM'in genel olarak tutarlı cevaplar verdiği, kaynak metinden kopmadan açıklama yapabildiği ve retrieval sonuçlarını anlamlı şekilde kullandığı gözlemlendi.
 
 ---
 
-## 6. Güvenlik Notları
+## 5. Çok Dilli Soru-Cevap Testleri
 
-- `.env.example` dosyasında gerçek API key'e benzeyen bir değer bulunuyordu. Bu, push öncesi placeholder ile değiştirilmelidir.
-- Upload endpoint'inde dosya türü kontrolü var ancak dosya boyutu limiti yok.
-- Authentication mekanizması bulunmuyor; public deploy için gereklidir.
+Sistemin çok dilli çalışıp çalışmadığını anlamak için farklı dil kombinasyonları denendi.
+
+Örnek senaryolar:
+
+- Türkçe belge yüklendi, İngilizce soru soruldu.
+- İngilizce belge yüklendi, Türkçe soru soruldu.
+- Türkçe belge hakkında Türkçe takip soruları soruldu.
+- İngilizce belge hakkında İngilizce açıklama istendi.
+
+Gözlem:
+
+- Embedding modeli multilingual olduğu için Türkçe ve İngilizce sorularla doğru chunk'lar bulunabildi.
+- GPT-4o, sorulan dilde cevap verme konusunda tutarlı davrandı.
+- Türkçe belgeye İngilizce soru sorulduğunda da belge içeriği anlaşılabildi.
+- İngilizce belgeye Türkçe soru sorulduğunda da doğru cevaplar üretildi.
+
+Bu testler sonucunda sistemin temel çok dilli RAG senaryolarını desteklediği gözlemlendi.
+
+---
+
+## 6. Çoklu Dosya Testi
+
+Birden fazla dosya aynı oturumda yüklenerek test edildi.
+
+Gözlem:
+
+- Her dosyanın chunk'ları aynı ChromaDB collection içinde saklandı.
+- Chunk metadata'sında dosya adı (`source`) tutulduğu için kaynak ayrımı yapılabildi.
+- Soru ilgili dosyaya ait içerikle eşleştiğinde doğru chunk'lar getirildi.
+- Frontend'de yüklenen dosyalar listelendi.
+- Dosya silindiğinde ilgili chunk'ların ChromaDB'den temizlendiği doğrulandı.
+
+Bu test, sistemin tek dosyaya bağlı kalmadan birden fazla belgeyle çalışabildiğini gösterdi.
+
+---
+
+## 7. Conversation History ve Summary Testi
+
+Akıcı sohbet deneyimini test etmek için uzun konuşmalar yapıldı.
+
+Test edilen durumlar:
+
+- Önceki cevaba referans veren takip soruları
+- "Bunu daha basit açıkla" gibi bağlama bağlı sorular
+- Uzun konuşmadan sonra önceki konuların özetini isteme
+- 10 mesajdan fazla konuşmada summary mekanizmasının devreye girmesi
+
+Gözlem:
+
+- Son mesajlar LLM'e gönderildiği için kısa vadeli bağlam korundu.
+- Konuşma uzadığında eski mesajlar özetlenerek context'e eklendi.
+- Kullanıcı geçmiş konuşmanın özetiyle ilgili soru sorduğunda sistem genel konuşma akışını hatırlayabildi.
+- Bu sayede chatbot daha doğal ve akıcı bir sohbet deneyimi sundu.
+
+---
+
+## 8. LLM Cevap Tutarlılığı
+
+LLM cevapları genel olarak şu açılardan değerlendirildi:
+
+- Belgede bulunan bilgiye dayanıyor mu?
+- Sorunun diline uygun cevap veriyor mu?
+- Kaynak metinle çelişiyor mu?
+- Belgede olmayan bilgi sorulduğunda makul davranıyor mu?
+- Takip sorularında önceki bağlamı dikkate alıyor mu?
+
+Gözlem:
+
+- GPT-4o genel olarak tutarlı ve anlaşılır cevaplar verdi.
+- RAG context'i bulunduğunda belgeye dayalı cevaplar üretildi.
+- Relevant chunk bulunamadığında sistem serbest sohbet moduna düşebildi.
+- Conversation history eklendikten sonra takip sorularındaki tutarlılık arttı.
+
+---
+
+## 9. Bilinen Sınırlamalar
+
+Testler sonucunda bazı sınırlamalar gözlemlendi:
+
+1. **El yazısı performansı:** Basılı metinlerde OCR başarısı yüksekken el yazılarında hata oranı artıyor.
+2. **Çok yoğun ekran görüntüleri:** Metin çok sıkışık veya sayfa düzeni karmaşıksa OCR çıktısında satır sırası ve karakter hataları oluşabiliyor.
+3. **Tablolu belgeler:** Metin çıkarılsa bile tablo yapısı birebir korunmuyor.
+4. **PDF türüne bağlı farklar:** Dijital PDF'lerde native extraction çok başarılı; taranmış PDF'lerde kalite OCR başarısına bağlı.
+5. **LLM değerlendirmesi manuel:** Cevap doğruluğu otomatik metriklerle değil manuel gözlemle değerlendirildi.
+
+---
+
+## 10. Genel Sonuç
+
+Testler sonucunda sistemin temel hedeflerini karşıladığı görüldü:
+
+- PDF ve görsel dosyalardan metin çıkarılabiliyor.
+- Türkçe ve İngilizce basılı metinlerde OCR başarısı yüksek.
+- El yazısı gibi zor koşullarda başarım düşse de sistemin sınırları anlaşılabiliyor.
+- Çıkarılan metinler chunk'lara ayrılıp embedding'e dönüştürülüyor.
+- ChromaDB üzerinden ilgili parçalar bulunabiliyor.
+- GPT-4o ile belgeye dayalı ve çok dilli cevaplar üretilebiliyor.
+- Birden fazla dosya aynı oturumda destekleniyor.
+- Conversation summary sayesinde uzun sohbetlerde bağlam kaybı azaltılıyor.
+
+Bu nedenle proje, belge tabanlı çok dilli RAG chatbot hedefi için işlevsel ve testlerle doğrulanmış bir prototip olarak değerlendirildi.

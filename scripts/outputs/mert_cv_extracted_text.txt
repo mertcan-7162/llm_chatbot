@@ -1,5 +1,76 @@
-# Extracted text: 2.mehmet.png
+# Extracted text: mert_cv.pdf
 
---- Page 1 (ocr) ---
+--- Page 1 (native) ---
 
-II. Mehmed (Osmanlica: jl Ja, romanize: Mehemmed-i Sani) veya bilinen adiyla Fatih Sultan Mehmed ya da ünvani olan Fatih (30 Mart 1432, Edirne - 3 Mayis 1481, Gebze), Osmanli Imparatorluu'nun 7. padiahidir. ilk olarak 1444-1446 yillari arasinda kisa bir dönem, daha sonra 1451'den 1481 yilindaki ölümüne kadar 30 yil boyunca hüküm sürdü. 29 Mayis 1453 tarihinde Istanbul'u fethetti ve yaklaik bin yillik Dou Roma (Bizans) Imparatorluu'na son verdi. Fetihten sonra "Fatih" ünvaniyla anilmaya balad.[1] Bu olay, birçok uzman kii tarafindan Orta Ça'in sonu ve Yeni Ça'in balangicina neden olan tarihí olaylardan biri olarak görülmektedir.[2] II. Mehmed, 30 Mart 1432 tarihinde Edirne'de dodu. Babasi altinci Osmanli padiahi II. Murad, annesi ise Hüma Hatun'dur. Küçük yata tahsiline ve yetimesine çok önem verilen ehzade Mehmed, devrin en üstün ålimlerinden eitim gördü. 11 yaina geldiinde idari yönden tecrübe kazanmasi için Manisa sancakbeyliine tayin edildi. [3] Felsefe, hadis, tefsir, fikih, kelâm, tarih, geometri ve matematik alanlarinda fevkalâde yetiti.[3] 1444 yilnda II. Murad, tahti 12 yaindaki olu Mehmed'e devrederek Manisa'ya çekildi.[3] Ancak Osmanli tahtina küçük yata birisinin geçtiini duyan Avrupa ülkeleri, bir kez daha Osmanli topraklarina yöneldi. Bunun üzerine II. Murad, 1446 senesinde tekrar tahta geçti.[3] II. Mehmed, 1451 ylinda babasinin ölmesi üzerine 19 yainda tekrar Osmanli tahtina oturdu. Osmanli donanmasini güçlendirip Konstantinopolis'e saldirmak için hazirliklara baladi ve ehri 1453'te 21 yaindayken fethedip Dou Roma (Bizans) Imparatorluu'na son verdi. Ardindan 1460'ta Mora Despotluu'nu, 1461'de ise Trabzon Imparatorluu'nu ele geçirip Bizans'in son iki kalintisini da egemenlii altina aldi. 1473'te, Akkoyunlu hükümdari Uzun Hasan'i Otlukbeli Muharebesi ile malup etti. Bunlarin yani sira, Anadolu'da ve Güneydou Avrupa'da fetihlerini sürdürüp Karaman ve çevresi, Sirbistan, Eflak, Bosna, Arnavutluk, Kirim gibi önemli bölgeleri Osmanli Imparatorluu'na kazandirdi. 1481 yilinda Anadolu'ya doru yeni bir sefere çikan Sultan Mehmed, yolun bainda hastalandi ve 3 Mayis 1481 tarihinde, Gebze yakinlarinda yer alan Hünkârçayiri'ndaki ordugâhinda 49 yaindayken öldü. Mezari Istanbul'un Fatih ilçesindeki Fatih Camii'nde yer almaktadir.
+MERT CAN
+Ankara, T¨urkiye | +90 505 038 9822 | mertcan716258@gmail.com | linkedin.com/in/mert-can-link
+Education
+TOBB University of Economics and Technology (TOBB ETU), Ankara, T¨urkiye
+2020 – 2025
+B.Sc. in Computer Engineering, GPA: 3.19 / 4.00
+University Entrance Rank: 8,922
+Experience
+Computer Vision Engineer
+SolarVis, Ankara
+Dec 2025
+• Built an end-to-end system to extract 2D roof structures from satellite images and generate 3D roof models from
+them.
+• Used computer vision methods such as image segmentation, depth estimation, and image processing, together
+with linear algebra–based solutions for 3D reconstruction.
+• Gained strong experience in building full AI pipelines, including data labeling, model development, and post-
+processing using Python, PyTorch, and OpenCV.
+AI Compiler Engineer
+Synnada AI, Ankara
+May 2025 – Oct 2025
+• Designed and implemented the CUDA backend from scratch for a multi-backend AI compiler, optimizing GPU
+kernels for performance.
+• Improved the C backend by refactoring core operations, enhancing precision and broadcast support, and increas-
+ing compiler stability.
+• Researched AI compiler design, system-level programming, and GPU architectures, strengthening expertise in
+C, C++, Python, and CUDA.
+Computer Vision Intern
+Havelsan, Ankara
+Sep 2024 – Dec 2024
+• Developed object tracking and motion analysis pipelines using computer vision techniques.
+• Integrated deep learning–based detection and tracking methods for pedestrian tracking and motion classification.
+• Gained deeper understanding of camera geometry, depth estimation, and visual perception principles.
+AI Hardware Research Intern Barcelona Supercomputing Center (BSC), Spain
+Jan 2024 – Apr 2024
+• Developed FPGA-based digital systems and implemented a convolutional neural network (CNN) in Verilog.
+• Utilized PS and PL logics on SoC platforms to study FPGA power behavior.
+• Explored Large Language Models (LLMs), focusing on the LLaMA family and hardware efficiency aspects.
+Processor Architecture Research Intern Kasırga Microprocessors Lab, Ankara Nov 2022 – Nov 2023
+• Conducted one year of research (4 months as an intern).
+• Conducted extensive research on processor architecture and hardware design.
+• Contributed to the development and enhancement of custom RISC-V–based processor pipelines. Designed and
+integrated multiple processor units.
+
+--- Page 2 (native) ---
+
+Selected Projects
+Teknofest RISC-V Processor Design Competition
+Nov 2022 – Apr 2023
+• Contributed to the design of a pipelined RV32IMCX processor by implementing the ALU and cache architecture,
+and assisting in verification and testing stages.
+• Achieved 3rd place nationally in the Teknofest RISC-V Design Competition.
+Yoga Pose Estimation Using Computer Vision
+Mar 2025 – Apr 2025
+• Developed a yoga pose classification system for five core postures using computer vision techniques.
+• Applied pose estimation (YOLO, MediaPipe), CNN architectures (EfficientNetB0, MobileNetV2, ResNet18),
+and classical image processing methods.
+• Gained extensive experience in Python, PyTorch, machine learning and computer vision techniques.
+Skills
+Programming: Python, C, C++, CUDA, Verilog, PyTorch
+Specialization: AI Compilers, GPU Programming, Embedded AI, Computer Vision
+Tools: Git, Linux
+References
+• Sami Can Tando˘gdu
+Co-Founder and CEO in Synnada
+Contact: samican@synnada.ai
+• Mehmet Ozan Kabak
+Co-Founder and CEO in Synnada
+Contact: ozan@synnada.ai
+• Nazım Orhan
+Ai Engineer at Synnada
+Contact: nazim.orhan@synnada.ai
+Phone: +90 (505) 712 42 53

@@ -102,7 +102,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-`.env` dosyasını düzenle ve OpenAI API key'ini gir:
+`.env` dosyasını düzenlemek istersen düzenle:
 
 ```env
 OPENAI_API_KEY=sk-your-actual-key-here
