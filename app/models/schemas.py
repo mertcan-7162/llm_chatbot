@@ -56,8 +56,8 @@ class ChatMessage(BaseModel):
 class QueryRequest(BaseModel):
     query: str
     collection_name: str = "default"
-    n_results: int = Field(default=5, ge=1, le=20)
-    min_score: float = Field(default=0.3, ge=0.0, le=1.0)
+    n_results: int = Field(default=10, ge=1, le=20)
+    min_score: float = Field(default=0.10, ge=0.0, le=1.0)
     conversation_history: list[ChatMessage] = Field(default_factory=list)
 
 

@@ -113,7 +113,7 @@ OCR_LANG=tr
 OCR_CONFIDENCE_THRESHOLD=0.7
 CHUNK_SIZE=512
 CHUNK_OVERLAP=64
-RELEVANCE_THRESHOLD=0.3
+RELEVANCE_THRESHOLD=0.10
 ```
 
 ### 5. Uygulamayı başlat
@@ -160,7 +160,7 @@ Tüm ayarlar `.env` dosyası veya ortam değişkenleri üzerinden yönetilir:
 | `OCR_CONFIDENCE_THRESHOLD` | `0.7` | OCR confidence filtre eşiği (0.0-1.0). |
 | `CHUNK_SIZE` | `512` | Maksimum chunk boyutu (karakter). |
 | `CHUNK_OVERLAP` | `64` | Chunk'lar arası örtüşme (karakter). |
-| `RELEVANCE_THRESHOLD` | `0.3` | Varsayılan minimum benzerlik skoru (0.0-1.0). |
+| `RELEVANCE_THRESHOLD` | `0.10` | Varsayılan minimum benzerlik skoru (0.0-1.0). |
 
 ---
 

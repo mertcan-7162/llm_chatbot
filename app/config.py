@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ocr_confidence_threshold: float = 0.7
     chunk_size: int = 512
     chunk_overlap: int = 64
-    relevance_threshold: float = 0.3
+    relevance_threshold: float = 0.10
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

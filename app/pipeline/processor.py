@@ -95,8 +95,8 @@ class Pipeline:
         self,
         query: str,
         collection_name: str = "default",
-        n_results: int = 5,
-        min_score: float = 0.3,
+        n_results: int = 10,
+        min_score: float = 0.10,
         conversation_history: list[ChatMessage] | None = None,
     ) -> QueryResponse:
         history = conversation_history or []

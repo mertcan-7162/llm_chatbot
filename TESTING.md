@@ -207,6 +207,36 @@ Gözlem:
 - Relevant chunk bulunamadığında sistem serbest sohbet moduna düşebildi.
 - Conversation history eklendikten sonra takip sorularındaki tutarlılık arttı.
 
+### 8.1 CV Üzerinden Hallucination Testi
+
+LLM'in belgede olan ve olmayan bilgileri ayırt edip edemediğini test etmek için `example_input_files/mert_cv.pdf` dosyası chatbot'a yüklendi. CV içeriği İngilizce olmasına rağmen sorular Türkçe soruldu.
+
+İlk soru:
+
+> Mert hangi işlerle uğraşmaktadır? Tecrübeleri nelerdir?
+
+Sistem ilgili chunk'ları başarıyla tespit etti ve CV'deki deneyimlere dayalı şu içerikte bir cevap verdi:
+
+> Mert Can, bilgisayar mühendisliği alanında eğitim görmekte ve çeşitli projelerde yer almıştır. Tecrübeleri arasında:
+>
+> Computer Vision Engineer olarak SolarVis, Ankara'da çalışmıştır. Burada uydu görüntülerinden 2D çatı yapıları çıkarıp bunlardan 3D çatı modelleri oluşturmak için uçtan uca bir sistem geliştirmiştir. (Kaynak: mert_cv.pdf, Sayfa 1)
+>
+> Computer Vision Intern olarak Havelsan, Ankara'da çalışmıştır. Burada nesne takibi ve hareket analizi boru hatları geliştirmiştir. (Kaynak: mert_cv.pdf, Sayfa 1)
+>
+> Ayrıca, AI derleyicileri, GPU programlama, gömülü AI ve bilgisayarla görme konularında uzmanlaşmıştır.
+
+Bu cevap CV'deki İngilizce içerikle uyumludur. Özellikle `SolarVis`, `Havelsan`, bilgisayarla görme, 3D çatı modeli çıkarımı, AI compiler ve GPU programlama gibi bilgiler doğru chunk'lardan alınmıştır. Bu test, İngilizce belge + Türkçe soru senaryosunda retrieval ve LLM cevap üretiminin birlikte başarılı çalıştığını gösterdi.
+
+Daha sonra CV'de bulunmayan bir alan soruldu:
+
+> Aslında CV'de hiç olmayan sinyal işleme alanında nasıl tecrübeleri vardır?
+
+Verilen cevap:
+
+> Belgede sinyal işleme alanında Mert Can'ın tecrübelerine dair bir bilgi bulunmamaktadır. Eğer başka bir konuda yardımcı olabileceğim bir şey varsa lütfen belirtin.
+
+Bu sonuç önemliydi çünkü model, belgede bulunmayan bir deneyimi uydurmadı. Yani RAG context'i yetersiz olduğunda hallucination üretmek yerine, belgedeki bilginin sınırlı olduğunu açıkça belirtti. Bu test sistemin belgeye bağlı kalma davranışını ve güvenilirliğini doğruladı.
+
 ---
 
 ## 9. Bilinen Sınırlamalar
