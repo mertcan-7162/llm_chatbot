@@ -1,0 +1,19 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+torch
+torchvision
+
+paddlepaddle
+paddleocr
+PyMuPDF
+sentence-transformers
+chromadb
+fastapi
+uvicorn[standard]
+openai
+python-multipart
+pydantic
+pydantic-settings
+Pillow
+python-dotenv
+PyYAML

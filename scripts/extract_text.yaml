@@ -1,0 +1,4 @@
+input_path: /home/mert/Documents/PROJECTS/llm_chatbot/2.mehmet.png
+output_path: /home/mert/Documents/PROJECTS/llm_chatbot/scripts/outputs/mehmet_extracted_text.txt
+output_format: text  # text or json
+show_ocr_details: false
